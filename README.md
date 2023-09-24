@@ -1,5 +1,8 @@
-# How to run the app and test
+# PrettyFormKreaTest
 
+- Used react-hook-form with Yup for validation
+- All Cypress test cases passed
+- Designed beautifully with mobile friendly & responsive
 
 ## How to run the app
 
