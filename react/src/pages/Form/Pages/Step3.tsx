@@ -1,78 +1,77 @@
-import React, { useCallback } from "react";
+import React from "react";
+import { Controller } from "react-hook-form";
 import Button from "src/components/Button";
 import FormContainer from "src/components/FormContainer";
-import { FormData } from "src/constants/Index";
 
-interface Step1Props {
-  data: FormData;
-  errors: Partial<FormData>;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onNext: () => void;
+interface Step3Props {
+  control: any;
+  errors: any;
+  onSubmit: () => void;
   onBack: () => void;
 }
 
-interface BodyContentProps {
-  data: FormData;
-  errors: Partial<FormData>;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-interface FooterContentProps {
-  onNext: () => void;
-  onBack: () => void;
-}
-
-const BodyContent: React.FC<BodyContentProps> = ({
-  data,
+const BodyContent: React.FC<{ control: any; errors: any }> = ({
+  control,
   errors,
-  onInputChange,
 }) => {
   return (
-    <form className="p-3 flex flex-col gap-3 ">
+    <form className="p-3 flex flex-col gap-3">
       <label>
         Seat
-        <input
-          className="border-[1px] border-gray-300 ml-2"
-          data-testid="seat"
+        <Controller
+          render={({ field }) => (
+            <input
+              className="border-[1px] border-gray-300 ml-2"
+              data-testid="seat"
+              {...field}
+            />
+          )}
+          control={control}
           name="seat"
-          value={data.seat}
-          onChange={onInputChange}
         />
         {errors.seat && (
           <div className="text-red-500 font-light text-[10pt]">
-            {errors.seat}
+            {errors.seat.message}
           </div>
         )}
       </label>
 
       <label>
         Food
-        <input
-          className="border-[1px] border-gray-300 ml-2"
-          data-testid="food"
+        <Controller
+          render={({ field }) => (
+            <input
+              className="border-[1px] border-gray-300 ml-2"
+              data-testid="food"
+              {...field}
+            />
+          )}
+          control={control}
           name="food"
-          value={data.food}
-          onChange={onInputChange}
         />
         {errors.food && (
           <div className="text-red-500 font-light text-[10pt]">
-            {errors.food}
+            {errors.food.message}
           </div>
         )}
       </label>
 
       <label>
         Allergies
-        <input
-          className="border-[1px] border-gray-300 ml-2"
-          data-testid="allergies"
+        <Controller
+          render={({ field }) => (
+            <input
+              className="border-[1px] border-gray-300 ml-2"
+              data-testid="allergies"
+              {...field}
+            />
+          )}
+          control={control}
           name="allergies"
-          value={data.allergies}
-          onChange={onInputChange}
         />
         {errors.allergies && (
           <div className="text-red-500 font-light text-[10pt]">
-            {errors.allergies}
+            {errors.allergies.message}
           </div>
         )}
       </label>
@@ -80,40 +79,26 @@ const BodyContent: React.FC<BodyContentProps> = ({
   );
 };
 
-const FooterContent: React.FC<FooterContentProps> = ({ onNext, onBack }) => {
+const FooterContent: React.FC<{ onSubmit: () => void; onBack: () => void }> = ({
+  onSubmit,
+  onBack,
+}) => {
   return (
     <div className="p-4 flex flex-row items-center justify-between gap-6">
       <Button idName="back" name={"Back"} onClick={onBack} />
-      <Button idName="submit" name={"Next"} onClick={onNext} />
+      <Button idName="submit" name={"Next"} onClick={onSubmit} />
     </div>
   );
 };
 
-const Step3BeforeMemorized: React.FC<Step1Props> = ({
-  data,
-  errors,
-  onInputChange: onInputChangeProp,
-  onNext: onNextProp,
-  onBack: onBackProp,
-}) => {
-  const onInputChange = useCallback(onInputChangeProp, [onInputChangeProp]);
-  const onNext = useCallback(onNextProp, [onNextProp]);
-  const onBack = useCallback(onBackProp, [onBackProp]);
-
+const Step3: React.FC<Step3Props> = ({ control, errors, onSubmit, onBack }) => {
   return (
     <FormContainer
       header={<div data-testid="title">Step 3</div>}
-      body={
-        <BodyContent
-          data={data}
-          errors={errors}
-          onInputChange={onInputChange}
-        />
-      }
-      footer={<FooterContent onNext={onNext} onBack={onBack} />}
+      body={<BodyContent control={control} errors={errors} />}
+      footer={<FooterContent onSubmit={onSubmit} onBack={onBack} />}
     />
   );
 };
 
-const Step3 = React.memo(Step3BeforeMemorized);
 export default Step3;

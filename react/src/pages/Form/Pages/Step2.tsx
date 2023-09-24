@@ -1,62 +1,57 @@
-import React, { useCallback } from "react";
+import React from "react";
+import { Controller } from "react-hook-form";
 import Button from "src/components/Button";
 import FormContainer from "src/components/FormContainer";
-import { FormData } from "src/constants/Index";
 
-interface Step1Props {
-  data: FormData;
-  errors: Partial<FormData>;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onNext: () => void;
+interface Step2Props {
+  control: any;
+  errors: any;
+  onSubmit: () => void;
   onBack: () => void;
 }
 
-interface BodyContentProps {
-  data: FormData;
-  errors: Partial<FormData>;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-interface FooterContentProps {
-  onNext: () => void;
-  onBack: () => void;
-}
-
-const BodyContent: React.FC<BodyContentProps> = ({
-  data,
+const BodyContent: React.FC<{ control: any; errors: any }> = ({
+  control,
   errors,
-  onInputChange,
 }) => {
   return (
-    <form className="p-3 flex flex-col gap-3 ">
+    <form className="p-3 flex flex-col gap-3">
       <label>
         Phone
-        <input
-          className="border-[1px] border-gray-300 ml-2"
-          data-testid="phone"
+        <Controller
+          render={({ field }) => (
+            <input
+              className="border-[1px] border-gray-300 ml-2"
+              data-testid="phone"
+              {...field}
+            />
+          )}
+          control={control}
           name="phone"
-          value={data.phone}
-          onChange={onInputChange}
         />
         {errors.phone && (
           <div className="text-red-500 font-light text-[10pt]">
-            {errors.phone}
+            {errors.phone.message}
           </div>
         )}
       </label>
 
       <label>
         Email
-        <input
-          className="border-[1px] border-gray-300 ml-2"
-          data-testid="email"
+        <Controller
+          render={({ field }) => (
+            <input
+              className="border-[1px] border-gray-300 ml-2"
+              data-testid="email"
+              {...field}
+            />
+          )}
+          control={control}
           name="email"
-          value={data.email}
-          onChange={onInputChange}
         />
         {errors.email && (
           <div className="text-red-500 font-light text-[10pt]">
-            {errors.email}
+            {errors.email.message}
           </div>
         )}
       </label>
@@ -64,40 +59,26 @@ const BodyContent: React.FC<BodyContentProps> = ({
   );
 };
 
-const FooterContent: React.FC<FooterContentProps> = ({ onNext, onBack }) => {
+const FooterContent: React.FC<{ onSubmit: () => void; onBack: () => void }> = ({
+  onSubmit,
+  onBack,
+}) => {
   return (
     <div className="p-4 flex flex-row items-center justify-between gap-6">
       <Button idName="back" name={"Back"} onClick={onBack} />
-      <Button idName="submit" name={"Next"} onClick={onNext} />
+      <Button idName="submit" name={"Next"} onClick={onSubmit} />
     </div>
   );
 };
 
-const Step2BeforeMemorized: React.FC<Step1Props> = ({
-  data,
-  errors,
-  onInputChange: onInputChangeProp,
-  onNext: onNextProp,
-  onBack: onBackProp,
-}) => {
-  const onInputChange = useCallback(onInputChangeProp, [onInputChangeProp]);
-  const onNext = useCallback(onNextProp, [onNextProp]);
-  const onBack = useCallback(onBackProp, [onBackProp]);
-
+const Step2: React.FC<Step2Props> = ({ control, errors, onSubmit, onBack }) => {
   return (
     <FormContainer
       header={<div data-testid="title">Step 2</div>}
-      body={
-        <BodyContent
-          data={data}
-          errors={errors}
-          onInputChange={onInputChange}
-        />
-      }
-      footer={<FooterContent onNext={onNext} onBack={onBack} />}
+      body={<BodyContent control={control} errors={errors} />}
+      footer={<FooterContent onSubmit={onSubmit} onBack={onBack} />}
     />
   );
 };
 
-const Step2 = React.memo(Step2BeforeMemorized);
 export default Step2;

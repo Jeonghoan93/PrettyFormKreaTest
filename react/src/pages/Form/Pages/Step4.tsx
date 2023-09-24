@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Button from "src/components/Button";
 import FormContainer from "src/components/FormContainer";
 import { FormData } from "src/constants/Index";
@@ -9,11 +9,7 @@ interface Step4Props {
   onNext: () => void;
 }
 
-interface BodyContentProps {
-  data: FormData;
-}
-
-const BodyContent: React.FC<BodyContentProps> = ({ data }) => (
+const BodyContent: React.FC<{ data: FormData }> = ({ data }) => (
   <div>
     <div data-testid="firstName">{data.firstName}</div>
     <div data-testid="lastName">{data.lastName}</div>
@@ -26,26 +22,17 @@ const BodyContent: React.FC<BodyContentProps> = ({ data }) => (
   </div>
 );
 
-interface FooterContentProps {
-  onBack: () => void;
-  onNext: () => void;
-}
-
-const FooterContent: React.FC<FooterContentProps> = ({ onBack, onNext }) => (
+const FooterContent: React.FC<{ onBack: () => void; onNext: () => void }> = ({
+  onBack,
+  onNext,
+}) => (
   <div className="p-4 flex flex-row items-center justify-between gap-6">
     <Button idName="back" name={"Back"} onClick={onBack} />
     <Button name={"Show CV"} onClick={onNext} />
   </div>
 );
 
-const Step4BeforeMemorized: React.FC<Step4Props> = ({
-  data,
-  onBack: onBackProp,
-  onNext: onNextProp,
-}) => {
-  const onBack = useCallback(onBackProp, [onBackProp]);
-  const onNext = useCallback(onNextProp, [onNextProp]);
-
+const Step4: React.FC<Step4Props> = ({ data, onBack, onNext }) => {
   return (
     <FormContainer
       header={<div data-testid="title">Result</div>}
@@ -55,5 +42,4 @@ const Step4BeforeMemorized: React.FC<Step4Props> = ({
   );
 };
 
-const Step4 = React.memo(Step4BeforeMemorized);
 export default Step4;

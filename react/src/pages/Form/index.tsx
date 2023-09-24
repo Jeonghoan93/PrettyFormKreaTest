@@ -1,184 +1,121 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { FormData, initialData } from "src/constants/Index";
+import * as Yup from "yup";
 import Step1 from "./Pages/Step1";
 import Step2 from "./Pages/Step2";
 import Step3 from "./Pages/Step3";
 import Step4 from "./Pages/Step4";
 
+type Step = "step1" | "step2" | "step3" | "step4";
+
 interface FormProps {
-  page: string;
+  page: Step;
 }
+
+const schemas: Record<Step, Yup.AnyObjectSchema> = {
+  step1: Yup.object().shape({
+    firstName: Yup.string()
+      .required("First name is a required field")
+      .matches(/^[A-Za-z]*$/, "First name should not contain numbers"),
+    lastName: Yup.string()
+      .required("Last name is a required field")
+      .matches(/^[A-Za-z]*$/, "Last name should not contain numbers"),
+    age: Yup.number()
+      .required("Age is a required field")
+      .positive("Age should be positive")
+      .typeError("Age must be a number"),
+  }),
+  step2: Yup.object().shape({
+    email: Yup.string()
+      .required("Email is a required field")
+      .email("Email should have correct format"),
+    phone: Yup.string().required("Phone number is a required field"),
+  }),
+  step3: Yup.object().shape({
+    seat: Yup.string().required("Seat is a required field"),
+    food: Yup.string().required("Food is a required field"),
+    allergies: Yup.string().required("Allergies is a required field"),
+  }),
+  step4: Yup.object(),
+};
 
 const Form: React.FC<FormProps> = ({ page = "step1" }) => {
   const navigate = useNavigate();
+  const schema = schemas[page];
+  const [formData, setFormData] = useState<FormData>(initialData);
 
-  const [data, setData] = useState<FormData>(initialData);
-  const [currentStep, setCurrentStep] = useState(() => {
-    switch (page) {
-      case "step1":
-        return 1;
-      case "step2":
-        return 2;
-      case "step3":
-        return 3;
-      case "step4":
-        return 4;
-      default:
-        return 1;
-    }
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    defaultValues: initialData,
   });
-  const [errors, setErrors] = useState<Partial<FormData>>({});
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setData((prevData) => ({
+  const handleNext = (data?: FormData) => {
+    if (data) {
+      setFormData((prevData) => ({
         ...prevData,
-        [e.target.name]: e.target.value,
+        ...data,
       }));
-    },
-    []
-  );
-
-  const validateStep = useCallback((): boolean => {
-    let isValid = true;
-    const tempErrors: Partial<FormData> = {};
-
-    switch (currentStep) {
-      case 1:
-        if (!data.firstName) {
-          isValid = false;
-          tempErrors.firstName = "First name is a required field";
-        } else if (/\d/.test(data.firstName)) {
-          isValid = false;
-          tempErrors.firstName = "First name should not contain numbers";
-        }
-
-        if (!data.lastName) {
-          isValid = false;
-          tempErrors.lastName = "Last name is a required field";
-        } else if (/\d/.test(data.lastName)) {
-          isValid = false;
-          tempErrors.lastName = "Last name should not contain numbers";
-        }
-
-        if (!data.age) {
-          isValid = false;
-          tempErrors.age = "Age must be a number";
-        } else if (parseInt(data.age) <= 0) {
-          isValid = false;
-          tempErrors.age = "Age should be positive";
-        }
-
-        break;
-      case 2:
-        if (!data.email) {
-          isValid = false;
-          tempErrors.email = "Email is a required field";
-        } else if (!/\S+@\S+\.\S+/.test(data.email)) {
-          isValid = false;
-          tempErrors.email = "Email should have correct format";
-        }
-
-        if (!data.phone) {
-          isValid = false;
-          tempErrors.phone = "Phone number is a required field";
-        }
-        break;
-      case 3:
-        if (!data.seat) {
-          isValid = false;
-          tempErrors.seat = "Seat is a required field";
-        }
-        if (!data.food) {
-          isValid = false;
-          tempErrors.food = "Food is a required field";
-        }
-        if (!data.allergies) {
-          isValid = false;
-          tempErrors.allergies = "Allergies is a required field";
-        }
-        break;
-      default:
-        break;
     }
 
-    setErrors(tempErrors);
-    return isValid;
-  }, [data, currentStep]);
-
-  const handleNext = useCallback(() => {
-    if (validateStep()) {
-      if (currentStep === 4) {
-        navigate("/cv");
-      } else {
-        setCurrentStep((prevStep) => prevStep + 1);
-        setErrors({});
-        navigate(`/step${currentStep + 1}`);
-      }
+    if (page === "step4") {
+      navigate("/cv");
+    } else {
+      navigate(`/step${parseInt(page.slice(-1)) + 1}`);
     }
-  }, [validateStep, currentStep, navigate]);
+  };
 
-  const handleBack = useCallback(() => {
-    if (currentStep > 1) {
-      setCurrentStep((prevStep) => prevStep - 1);
-      navigate(`/step${currentStep - 1}`);
+  const handleBack = () => {
+    if (page !== "step1") {
+      navigate(`/step${parseInt(page.slice(-1)) - 1}`);
     }
-  }, [currentStep, navigate]);
+  };
 
   useEffect(() => {
-    switch (page) {
-      case "step1":
-        setCurrentStep(1);
-        break;
-      case "step2":
-        setCurrentStep(2);
-        break;
-      case "step3":
-        setCurrentStep(3);
-        break;
-      case "step4":
-        setCurrentStep(4);
-        break;
-      default:
-        setCurrentStep(1);
-        break;
+    for (const key in initialData) {
+      if (Object.prototype.hasOwnProperty.call(initialData, key)) {
+        setValue(key as keyof FormData, initialData[key as keyof FormData]);
+      }
     }
-  }, [page]);
+  }, [setValue]);
 
   return (
     <div>
-      {currentStep === 1 && (
+      {page === "step1" && (
         <Step1
-          data={data}
+          control={control}
           errors={errors}
-          onInputChange={handleInputChange}
-          onNext={handleNext}
+          onSubmit={handleSubmit((data) => handleNext(data))}
         />
       )}
 
-      {currentStep === 2 && (
+      {page === "step2" && (
         <Step2
-          data={data}
+          control={control}
           errors={errors}
-          onInputChange={handleInputChange}
-          onNext={handleNext}
+          onSubmit={handleSubmit((data) => handleNext(data))}
           onBack={handleBack}
         />
       )}
 
-      {currentStep === 3 && (
+      {page === "step3" && (
         <Step3
-          data={data}
+          control={control}
           errors={errors}
-          onInputChange={handleInputChange}
-          onNext={handleNext}
+          onSubmit={handleSubmit((data) => handleNext(data))}
           onBack={handleBack}
         />
       )}
 
-      {currentStep === 4 && (
-        <Step4 data={data} onBack={handleBack} onNext={handleNext} />
+      {page === "step4" && (
+        <Step4 data={formData} onBack={handleBack} onNext={handleNext} />
       )}
     </div>
   );
