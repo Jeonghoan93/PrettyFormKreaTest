@@ -3,44 +3,12 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { FormData, initialData } from "src/constants/Index";
-import * as Yup from "yup";
+import { FormProps } from "src/types";
+import { schemas } from "src/utiles/yupSchema";
 import Step1 from "./Pages/Step1";
 import Step2 from "./Pages/Step2";
 import Step3 from "./Pages/Step3";
 import Step4 from "./Pages/Step4";
-
-type Step = "step1" | "step2" | "step3" | "step4";
-
-interface FormProps {
-  page: Step;
-}
-
-const schemas: Record<Step, Yup.AnyObjectSchema> = {
-  step1: Yup.object().shape({
-    firstName: Yup.string()
-      .required("First name is a required field")
-      .matches(/^[A-Za-z]*$/, "First name should not contain numbers"),
-    lastName: Yup.string()
-      .required("Last name is a required field")
-      .matches(/^[A-Za-z]*$/, "Last name should not contain numbers"),
-    age: Yup.number()
-      .required("Age is a required field")
-      .positive("Age should be positive")
-      .typeError("Age must be a number"),
-  }),
-  step2: Yup.object().shape({
-    email: Yup.string()
-      .required("Email is a required field")
-      .email("Email should have correct format"),
-    phone: Yup.string().required("Phone number is a required field"),
-  }),
-  step3: Yup.object().shape({
-    seat: Yup.string().required("Seat is a required field"),
-    food: Yup.string().required("Food is a required field"),
-    allergies: Yup.string().required("Allergies is a required field"),
-  }),
-  step4: Yup.object(),
-};
 
 const Form: React.FC<FormProps> = ({ page = "step1" }) => {
   const navigate = useNavigate();
